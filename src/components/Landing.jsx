@@ -4,23 +4,25 @@ import './style/landing.css';
 import DFAVisualization from './dfavixgraph';
 import MinimizeDFA from './minimizedfa';
 
-
 function Landing() {
   const [graph1, setGraph1] = useState({
     states: [],
     transitions: [],
     startState: "",
     finalStates: [],
+    alphabet: new Set(),
   });
+
   const [graph2, setGraph2] = useState({
     states: [],
     transitions: [],
     startState: "",
     finalStates: [],
+    alphabet: new Set(),
   });
 
-  const [mini1 , setMini1] = useState(false);
-  const [mini2 , setMini2] = useState(false);
+  const [mini1, setMini1] = useState(false);
+  const [mini2, setMini2] = useState(false);
 
   function isEqual(graph1, graph2) {
     // Check if the number of states, start state, and final states are equal
@@ -55,30 +57,30 @@ function Landing() {
 
     // Check for non-determinism
     for (const state of graph1.states) {
-        const graph1Transitions = graph1.transitions.filter(t => t.source === state);
-        const graph2Transitions = graph2.transitions.filter(t => t.source === state);
+      const graph1Transitions = graph1.transitions.filter(t => t.source === state);
+      const graph2Transitions = graph2.transitions.filter(t => t.source === state);
 
-        if (!areTransitionSetsEqual(graph1Transitions, graph2Transitions)) {
-            return false;
-        }
+      if (!areTransitionSetsEqual(graph1Transitions, graph2Transitions)) {
+        return false;
+      }
     }
 
     return true;
-}
+  }
 
-function areTransitionSetsEqual(transitions1, transitions2) {
+  function areTransitionSetsEqual(transitions1, transitions2) {
     if (transitions1.length !== transitions2.length) {
-        return false;
+      return false;
     }
 
     for (const transition of transitions1) {
-        if (!transitions2.some(t => t.target === transition.target && t.label === transition.label)) {
-            return false;
-        }
+      if (!transitions2.some(t => t.target === transition.target && t.label === transition.label)) {
+        return false;
+      }
     }
 
     return true;
-}
+  }
 
   const handleGraph1Change = (newGraph) => {
     setGraph1(newGraph);
@@ -90,7 +92,11 @@ function areTransitionSetsEqual(transitions1, transitions2) {
 
   const addRowToGraph = (graph, setGraph) => {
     const newTransition = { source: '', target: '', label: '' };
-    setGraph({ ...graph, transitions: [...graph.transitions, newTransition] });
+    setGraph({
+      ...graph,
+      transitions: [...graph.transitions, newTransition],
+      alphabet: new Set([...graph.alphabet, newTransition.label]),
+    });
   };
 
   const deleteRowFromGraph = (graph, setGraph, index) => {
@@ -208,17 +214,15 @@ function areTransitionSetsEqual(transitions1, transitions2) {
           </div>
           <DFAVisualization graph={graph1} />
           <h3>Minimize DFA</h3>
-          <button onClick={()=>{
-            //check if the graph is has its states and transitions defined
-            if(graph1.states.length === 0 || graph1.transitions.length === 0){
+          <button onClick={() => {
+            // check if the graph has its states and transitions defined
+            if (graph1.states.length === 0 || graph1.transitions.length === 0) {
               alert("Please define the states and transitions of the DFA before minimizing it");
-            }
-            else{
+            } else {
               setMini1(true);
             }
-          }}  >Minimize</button>
+          }}>Minimize</button>
           {mini1 ? <MinimizeDFA graph={graph1} /> : null}
-          
         </div>
         <div className="graphLanding">
           <h1>DFA 2</h1>
@@ -300,15 +304,15 @@ function areTransitionSetsEqual(transitions1, transitions2) {
           </div>
           <DFAVisualization graph={graph2} />
           <h3>Minimize DFA</h3>
-          <button onClick={()=>{
-            //check if the graph is has its states and transitions defined
-            if(graph2.states.length === 0 || graph2.transitions.length === 0){
+          <button onClick={() => {
+            // check if the graph has its states and transitions defined
+            if (graph2.states.length === 0 || graph2.transitions.length === 0) {
               alert("Please define the states and transitions of the DFA before minimizing it");
-            }
-            else{
+            } else {
               setMini2(true);
             }
-          }}  >Minimize</button>
+          }}>Minimize</button>
+          {mini2 ? <MinimizeDFA graph={graph2} /> : null}
         </div>
       </div>
       <div className='landing-container'>
@@ -321,7 +325,6 @@ function areTransitionSetsEqual(transitions1, transitions2) {
           )}
         </div>
       </div>
-
     </div>
   );
 }

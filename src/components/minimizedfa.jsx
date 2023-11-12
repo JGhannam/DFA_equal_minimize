@@ -9,66 +9,68 @@ function MinimizeDFA({ graph }) {
   }, [graph]);
 
   function minimizeDFA() {
-    const A = new Set([graph.startState]);
-    const B = new Set();
-  
-    while (A.size > 0) {
-      const q = A.values().next().value;
-      A.delete(q);
-  
-      for (const a of [0, 1]) {
-        // Check if the transition is found
-        const transition = graph.transitions.find(t => t.source === q && t.input === a);
-        if (transition) {
-          const nextState = transition.target;
-          
-          // Add nextState to A or B based on its presence in A or B
-          if (A.has(nextState)) {
-            A.add(nextState);
+    if (!graph || !graph.transitions || graph.transitions.length === 0) {
+      return;
+    }
+
+    // Step 1: Partition states into two sets - final states and non-final states
+    const finalStates = new Set(graph.finalStates);
+    const partitions = [finalStates, new Set([...graph.states].filter(state => !finalStates.has(state)))];
+
+    // Step 2: Refine partitions until no further refinement is possible
+    let refined = true;
+    while (refined) {
+      refined = false;
+
+      for (const partition of partitions) {
+        const newPartitions = new Map();
+
+        for (const state of partition) {
+          for (const symbol of graph.alphabet) {
+            const nextState = graph.transitions.find(t => t.source === state && t.input === symbol)?.target;
+            const targetPartition = partitions.find(p => p.has(nextState));
+
+            if (newPartitions.has(targetPartition)) {
+              newPartitions.get(targetPartition).add(state);
+            } else {
+              newPartitions.set(targetPartition, new Set([state]));
+            }
           }
-          if (B.has(nextState)) {
-            B.add(nextState);
-          }
+        }
+
+        if (newPartitions.size > 1) {
+          refined = true;
+          partitions.splice(partitions.indexOf(partition), 1, ...newPartitions.values());
         }
       }
     }
-  
-    const minimizedStates = [...A, ...B];
-    const minimizedTransitions = [];
-    for (const state of minimizedStates) {
-      for (const input of [0, 1]) {
-        // Check if the transition is found
-        const transition = graph.transitions.find(t => t.source === state && t.input === input);
-        if (transition) {
-          const nextState = transition.target;
-          const minimizedNextState = minimizedStates.indexOf(nextState);
-          minimizedTransitions.push({
-            source: state,
-            input,
-            target: minimizedNextState,
-          });
-        }
-      }
-    }
-  
+
+    // Step 3: Build the minimized DFA
+    const stateToPartitionMap = new Map();
+    partitions.forEach((partition, index) => {
+      partition.forEach(state => stateToPartitionMap.set(state, index));
+    });
+
+    const minimizedStates = Array.from(stateToPartitionMap.values());
+    const minimizedTransitions = graph.transitions
+      .filter(t => partitions[stateToPartitionMap.get(t.source)].has(t.target))
+      .map(t => ({
+        source: stateToPartitionMap.get(t.source),
+        input: t.input,
+        target: stateToPartitionMap.get(t.target),
+      }));
+
     setMinimizedGraph({
-      startState: graph.startState,
-      finalStates: graph.finalStates.filter(s => A.has(s)),
-      states: minimizedStates,
+      startState: stateToPartitionMap.get(graph.startState),
+      finalStates: Array.from(finalStates).map(state => stateToPartitionMap.get(state)),
+      states: Array.from(partitions.keys()),
       transitions: minimizedTransitions,
     });
-  }
-  
-
-  if (minimizedGraph) {
-    console.log(minimizedGraph);
   }
 
   return (
     <div>
-      <DFAVisualization 
-        graph={minimizedGraph}
-      />
+      <DFAVisualization graph={minimizedGraph} />
     </div>
   );
 }
