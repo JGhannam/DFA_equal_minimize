@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './style/Landing.css';
+import './style/landing.css';
 
 import DFAVisualization from './dfavixgraph';
 import MinimizeDFA from './minimizedfa';
