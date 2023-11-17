@@ -10,7 +10,7 @@ function Landing() {
     transitions: [],
     startState: "",
     finalStates: [],
-    alphabet: new Set(),
+    alphabet: [],
   });
 
   const [graph2, setGraph2] = useState({
@@ -18,13 +18,14 @@ function Landing() {
     transitions: [],
     startState: "",
     finalStates: [],
-    alphabet: new Set(),
+    alphabet: [],
   });
 
   const [mini1, setMini1] = useState(false);
   const [mini2, setMini2] = useState(false);
 
   function isEqual(graph1, graph2) {
+    console.log(graph1, graph2);
     // Check if the number of states, start state, and final states are equal
     if (
       graph1.states.length !== graph2.states.length ||
@@ -95,7 +96,6 @@ function Landing() {
     setGraph({
       ...graph,
       transitions: [...graph.transitions, newTransition],
-      alphabet: new Set([...graph.alphabet, newTransition.label]),
     });
   };
 
@@ -177,9 +177,17 @@ function Landing() {
                       type="text"
                       value={transition.label}
                       onChange={(e) => {
-                        const updatedTransitions = [...graph1.transitions];
-                        updatedTransitions[index].label = e.target.value;
-                        handleGraph1Change({ ...graph1, transitions: updatedTransitions });
+                        if (!graph1.alphabet.includes(e.target.value)) {
+                          alert("Please add the new symbol to the alphabet before adding it to the transition");
+                        } else {
+                          const updatedTransitions = [...graph1.transitions];
+                          updatedTransitions[index].label = e.target.value;
+                          handleGraph1Change({ ...graph1, transitions: updatedTransitions });
+                        }
+
+                        // const updatedTransitions = [...graph1.transitions];
+                        // updatedTransitions[index].label = e.target.value;
+                        // handleGraph1Change({ ...graph1, transitions: updatedTransitions });
                       }}
                     />
                   </td>
@@ -193,6 +201,17 @@ function Landing() {
             </tbody>
           </table>
           <button onClick={() => addRowToGraph(graph1, setGraph1)}>Add Row</button>
+          <div>
+            <label>Alphabet (comma-separated):</label>
+            <input
+              type="text"
+              value={graph1.alphabet.join(', ')}
+              onChange={(e) => {
+                const alphabet = e.target.value.split(',').map((symbol) => symbol.trim());
+                setGraph1({ ...graph1, alphabet });
+              }}
+            /> 
+          </div>
           <div>
             <label>Start State:</label>
             <input
@@ -267,9 +286,16 @@ function Landing() {
                       type="text"
                       value={transition.label}
                       onChange={(e) => {
-                        const updatedTransitions = [...graph2.transitions];
-                        updatedTransitions[index].label = e.target.value;
-                        handleGraph2Change({ ...graph2, transitions: updatedTransitions });
+                        if (!graph2.alphabet.includes(e.target.value)) {
+                          alert("Please add the new symbol to the alphabet before adding it to the transition");
+                        } else {
+                          const updatedTransitions = [...graph2.transitions];
+                          updatedTransitions[index].label = e.target.value;
+                          handleGraph2Change({ ...graph2, transitions: updatedTransitions });
+                        }
+                        // const updatedTransitions = [...graph2.transitions];
+                        // updatedTransitions[index].label = e.target.value;
+                        // handleGraph2Change({ ...graph2, transitions: updatedTransitions });
                       }}
                     />
                   </td>
@@ -283,6 +309,17 @@ function Landing() {
             </tbody>
           </table>
           <button onClick={() => addRowToGraph(graph2, setGraph2)}>Add Row</button>
+          <div>
+            <label>Alphabet (comma-separated):</label>
+            <input
+              type="text"
+              value={graph2.alphabet.join(', ')}
+              onChange={(e) => {
+                const alphabet = e.target.value.split(',').map((symbol) => symbol.trim());
+                setGraph2({ ...graph2, alphabet });
+              }}
+            />
+          </div>
           <div>
             <label>Start State:</label>
             <input
