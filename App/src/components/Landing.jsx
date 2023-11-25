@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './style/landing.css';
 
 import DFAVisualization from './dfavixgraph';
-import MinimizeDFA from './minimizedfa';
+// import MinimizeDFA from './minimizedfa';
 
 function Landing() {
   const [graph1, setGraph1] = useState({

@@ -2,7 +2,6 @@ import React from 'react'
 
 import DFAVisualization from './dfavixgraph'
 
-import MinimizeDFA from './minimizedfa';
 
 function Temp() {
     const graph = {
@@ -28,7 +27,7 @@ function Temp() {
   return (
     <div>
         <DFAVisualization graph={graph} />
-        <MinimizeDFA graph={graph} />
+      
     </div>
   )
 }
