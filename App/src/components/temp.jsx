@@ -1,9 +1,31 @@
 import React from 'react'
-
 import DFAVisualization from './dfavixgraph'
 
-
 function Temp() {
+
+
+    const [miniGraph, setMiniGraph] = React.useState({
+      states: [],
+      transitions: [],
+      startState: [],
+      finalStates: [],
+      alphabet: [],
+    })
+
+    React.useEffect(() => {
+      //fetch data from backend and log it to console
+      fetch("/data")
+        .then((res) => res.json())
+        .then((data) => {
+          setMiniGraph(data);
+        }
+  );
+  console.log(miniGraph);
+        }, [])
+
+
+
+
     const graph = {
         states: ["q0", "q1", "q2", "q3", "q4", "q5"],
         transitions: [

@@ -6,7 +6,6 @@ const DFAVisualization = ({ graph }) => {
   const graphRef = useRef(null);
 
   useEffect(() => {
-    console.log("graph: ", graph);
     if (graph) {
       const dotSource = generateDotSource(graph);
 
