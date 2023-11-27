@@ -12,19 +12,28 @@ function Temp() {
       alphabet: [],
     })
 
-    React.useEffect(() => {
-      //fetch data from backend and log it to console
-      fetch("/data")
-        .then((res) => res.json())
-        .then((data) => {
-          setMiniGraph(data);
-        }
-  );
-  console.log(miniGraph);
-        }, [])
+    React.useEffect(()=>{
+
+      handleSendDataToFlask(graph)
+
+    },[])
 
 
-
+    const handleSendDataToFlask = (graph) => {
+     fetch('http://localhost:5000/transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(graph)
+      })
+      .then(response => response.json())
+      .then(data => {
+        setMiniGraph(data.minimized_dfa)
+        console.log(data.minimized_dfa);
+      })
+    }
+    
 
     const graph = {
         states: ["q0", "q1", "q2", "q3", "q4", "q5"],
@@ -49,7 +58,7 @@ function Temp() {
   return (
     <div>
         <DFAVisualization graph={graph} />
-      
+        <DFAVisualization graph={miniGraph} />
     </div>
   )
 }

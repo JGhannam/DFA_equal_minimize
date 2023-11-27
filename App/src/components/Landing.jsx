@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import './style/landing.css';
 
 import DFAVisualization from './dfavixgraph';
-// import MinimizeDFA from './minimizedfa';
 
 function Landing() {
   const [graph1, setGraph1] = useState({
@@ -20,9 +19,44 @@ function Landing() {
     finalStates: [],
     alphabet: [],
   });
+  const [miniGraph, setMiniGraph] = React.useState({
+    states: [],
+    transitions: [],
+    startState: [],
+    finalStates: [],
+    alphabet: [],
+  })
+  const [miniGraph2, setMiniGraph2] = React.useState({
+    states: [],
+    transitions: [],
+    startState: [],
+    finalStates: [],
+    alphabet: [],
+  })
+  
 
-  const [mini1, setMini1] = useState(false);
-  const [mini2, setMini2] = useState(false);
+
+  const handleSendDataToFlask = (DFA,which) => {
+    console.log("Sending data to flask");
+    console.log(DFA);
+    fetch('http://localhost:5000/transfer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(DFA)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (which === 1) {
+        setMiniGraph(data.minimized_dfa)
+      } else {
+        setMiniGraph2(data.minimized_dfa)
+      }
+      console.log("minimized :",data.minimized_dfa);
+    })
+  }
+
 
   function isEqual(graph1, graph2) {
     console.log(graph1, graph2);
@@ -238,10 +272,13 @@ function Landing() {
             if (graph1.states.length === 0 || graph1.transitions.length === 0) {
               alert("Please define the states and transitions of the DFA before minimizing it");
             } else {
-              setMini1(true);
+              handleSendDataToFlask(graph1,1)
             }
           }}>Minimize</button>
-          {mini1 ? <MinimizeDFA graph={graph1} /> : null}
+          { miniGraph.states.length !== 0 ? <DFAVisualization graph={miniGraph} /> : null}
+        </div>
+        <div className='graphLanding'>
+          ok
         </div>
         <div className="graphLanding">
           <h1>DFA 2</h1>
@@ -346,10 +383,10 @@ function Landing() {
             if (graph2.states.length === 0 || graph2.transitions.length === 0) {
               alert("Please define the states and transitions of the DFA before minimizing it");
             } else {
-              setMini2(true);
+              handleSendDataToFlask(graph2,2)
             }
           }}>Minimize</button>
-          {mini2 ? <MinimizeDFA graph={graph2} /> : null}
+          { miniGraph2.states.length !== 0 ? <DFAVisualization graph={miniGraph2} /> : null}
         </div>
       </div>
       <div className='landing-container'>

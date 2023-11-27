@@ -1,9 +1,10 @@
 # Import Flask class from the flask module
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 
 app = Flask(__name__)
-
+CORS(app)
 
 def distinguishable_states(dfa, p, q):
     for symbol in dfa["alphabet"]:
@@ -26,6 +27,8 @@ def minimize_dfa(dfa):
     states = dfa["states"]
     marked = [[False] * len(states) for _ in range(len(states))]
 
+    print("lol1")
+
     # Mark pairs of final and non-final states
     for i in range(len(states)):
         for j in range(i + 1, len(states)):
@@ -35,6 +38,10 @@ def minimize_dfa(dfa):
             ):
                 marked[i][j] = True
                 marked[j][i] = True
+
+
+    print("lol2")
+
 
     # Mark distinguishable states
     changed = True
@@ -59,6 +66,8 @@ def minimize_dfa(dfa):
                             marked[j][i] = True
                             changed = True
 
+
+    print("lol3")
     # Merge equivalent states
     equivalent_classes = []
     visited = set()
@@ -71,6 +80,8 @@ def minimize_dfa(dfa):
                     visited.add(j)
             equivalent_classes.append(equivalent_class)
 
+    print("lol4")
+
     # Construct the minimized DFA
     minimized_dfa = {
         "states": [f"q{i}" for i in range(len(equivalent_classes))],
@@ -79,6 +90,7 @@ def minimize_dfa(dfa):
         "startState": f"q{equivalent_classes.index({dfa['startState']})}",
         "finalStates": [f"q{i}" for i, eq_class in enumerate(equivalent_classes) if any(state in dfa["finalStates"] for state in eq_class)],
     }
+    print("lol5")
 
     for eq_class in equivalent_classes:
         for symbol in dfa["alphabet"]:
@@ -93,52 +105,20 @@ def minimize_dfa(dfa):
             minimized_dfa["transitions"].append(
                 {"source": f"q{equivalent_classes.index(eq_class)}", "target": f"q{target_class}", "label": symbol}
             )
-
+    print("lol6")
     return minimized_dfa
 
 
-# Example usage
-states = ["q0", "q1", "q2", "q3", "q4", "q5"]
-transitions = [
-    {"source": "q0", "target": "q1", "label": "0"},
-    {"source": "q0", "target": "q2", "label": "1"},
-    {"source": "q1", "target": "q3", "label": "0"},
-    {"source": "q1", "target": "q4", "label": "1"},
-    {"source": "q2", "target": "q4", "label": "0"},
-    {"source": "q2", "target": "q3", "label": "1"},
-    {"source": "q3", "target": "q5", "label": "0"},
-    {"source": "q3", "target": "q5", "label": "1"},
-    {"source": "q4", "target": "q5", "label": "0"},
-    {"source": "q4", "target": "q5", "label": "1"},
-    {"source": "q5", "target": "q5", "label": "0"},
-    {"source": "q5", "target": "q5", "label": "1"},
-]
-start_state = "q0"
-final_states = ["q1", "q2", "q5"]
-alphabet = ["1", "0"]
-graph = {
-    "states": states,
-    "transitions": transitions,
-    "startState": start_state,
-    "finalStates": final_states,
-    "alphabet": alphabet,
-}
+@app.route('/transfer', methods=['POST'])
+def transfer():
+    graph = request.get_json()
+    print(graph)
+    minimized_dfa = minimize_dfa(graph)
+    print("minimized: ", minimize_dfa)
+    return jsonify({
+        "minimized_dfa": minimized_dfa
+    })
 
-minimized_dfa = minimize_dfa(graph)
-print("Minimized DFA:")
-print(minimized_dfa)
-
-
-app = Flask(__name__)
-
-
-import json
-@app.route('/data')
-def hello_world():
-    json_data = json.dumps(minimized_dfa)
-    
-    # Return the JSON string
-    return jsonify(data=json_data)
 
 if __name__ == '__main__':
     app.run(debug=True)
