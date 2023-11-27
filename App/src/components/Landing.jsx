@@ -3,7 +3,12 @@ import './style/landing.css';
 
 import DFAVisualization from './dfavixgraph';
 
+import OpenAI from "openai";
+
+
 function Landing() {
+
+
   const [graph1, setGraph1] = useState({
     states: [],
     transitions: [],
@@ -33,7 +38,46 @@ function Landing() {
     finalStates: [],
     alphabet: [],
   })
+
+
+  const [response_text, setResponse] = React.useState("");
+
+  const [image , setImage] = React.useState(null);
+
+  const openai = new OpenAI({
+    apiKey: '',
+    dangerouslyAllowBrowser: true,
+  });
   
+
+
+  async function vison() {
+    console.log("vision");
+    console.log(image);
+    const response = await openai.chat.completions.create({
+      model: "gpt-4-vision-preview",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "you should give all the states final states transissions alphabets of this DFA in a json format and tell us what this DFA accepts" },
+            {
+              type: "image_url",
+              image_url: {
+                "url": image,
+              },
+            },
+          ],
+        },
+
+      ],
+      max_tokens: 1000,
+    });
+    setResponse(response.choices[0].message.content);
+    console.log("Response: ",response.choices[0]);
+    console.log(response.choices[0].message.content);
+
+  }
 
 
   const handleSendDataToFlask = (DFA,which) => {
@@ -278,7 +322,27 @@ function Landing() {
           { miniGraph.states.length !== 0 ? <DFAVisualization graph={miniGraph} /> : null}
         </div>
         <div className='graphLanding'>
-          ok
+          <h1>Upload Image</h1>
+          <input type="file" onChange={(e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = () => {
+              setImage(reader.result);
+            }
+          }
+          } />
+          <button onClick={() => vison()}>Send</button>
+          {
+            response_text ? 
+            
+            <div className="response">
+              <h1>Response</h1>
+              <p>{response_text}</p>
+            </div>
+            
+         : null
+          }
         </div>
         <div className="graphLanding">
           <h1>DFA 2</h1>
