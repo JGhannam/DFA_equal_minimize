@@ -51,6 +51,8 @@ function Landing() {
   
 
 
+
+  // the following function is used to send the image to the openai api and get the response from it and set it to the state 
   async function vison() {
     console.log("vision");
     console.log(image);
@@ -80,6 +82,7 @@ function Landing() {
   }
 
 
+  // the following function sends the data to the flask server to minimize the DFA and then it sets the minimized DFA to the state
   const handleSendDataToFlask = (DFA,which) => {
     console.log("Sending data to flask");
     console.log(DFA);
@@ -104,49 +107,42 @@ function Landing() {
 
   function isEqual(graph1, graph2) {
     console.log(graph1, graph2);
-    // Check if the number of states, start state, and final states are equal
-    if (
-      graph1.states.length !== graph2.states.length ||
-      graph1.startState !== graph2.startState ||
-      graph1.finalStates.length !== graph2.finalStates.length
-    ) {
-      return false;
-    }
+//     Steps to identify equivalence
+// 1) For any pair of states (qi, qj) the transition for input a e E is defined by {qa,qb}
+// where transition {qi, a}= qa and transition {qj, a}=qb
+// The two automata are not equivalent if for a pair {qa,qb} one is INTERMEDIATE State and the other is FINAL State.
+// 2) If Initial State is Final State of one automaton, then in second automaton also Initial State must be Final State for them to be equivalent.
 
-    // Check if each state in graph1 is also in graph2
-    for (const state of graph1.states) {
-      if (!graph2.states.includes(state)) {
-        return false;
-      }
-    }
-
-    // Check if each transition in graph1 is also in graph2
+    //1) For any pair of states (qi, qj) the transition for input a e E is defined by {qa,qb}
     for (const transition of graph1.transitions) {
-      if (
-        !graph2.transitions.some(
-          (t) =>
-            t.source === transition.source &&
-            t.target === transition.target &&
-            t.label === transition.label
-        )
-      ) {
+      const source = transition.source;
+      const target = transition.target;
+      const label = transition.label;
+      const transition2 = graph2.transitions.find(t => t.source === source && t.label === label);
+      if (transition2) {
+        if (transition2.target !== target) {
+          return false;
+        }
+      } else {
         return false;
       }
     }
 
-    // Check for non-determinism
-    for (const state of graph1.states) {
-      const graph1Transitions = graph1.transitions.filter(t => t.source === state);
-      const graph2Transitions = graph2.transitions.filter(t => t.source === state);
-
-      if (!areTransitionSetsEqual(graph1Transitions, graph2Transitions)) {
+    //2) If Initial State is Final State of one automaton, then in second automaton also Initial State must be Final State for them to be equivalent.
+    if (graph1.finalStates.includes(graph1.startState)) {
+      if (!graph2.finalStates.includes(graph2.startState)) {
         return false;
       }
     }
+
+
 
     return true;
+   
   }
 
+
+//the following function is not used in the code but it is a good way to check if two transition sets are equal
   function areTransitionSetsEqual(transitions1, transitions2) {
     if (transitions1.length !== transitions2.length) {
       return false;
